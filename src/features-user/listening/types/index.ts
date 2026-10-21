@@ -7,8 +7,6 @@ export interface ListeningPart {
   description: string;
   questionsCount: number;
   duration: number;
-  progress: number;
-  status: 'not_started' | 'in_progress' | 'completed';
   accent: string;
 }
 
@@ -18,7 +16,6 @@ export interface ListeningTest {
   name: string;
   title: string;
   description: string;
-  progress: number;
   totalQuestions: number;
   estimatedMinutes: number;
   parts: ListeningPart[];
@@ -34,7 +31,6 @@ export interface ListeningSentence {
   startMs: number | null;
   endMs: number | null;
   orderIndex: number;
-  completed: boolean;
   hintLevels: ListeningHintLevel[];
 }
 

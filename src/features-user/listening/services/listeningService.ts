@@ -21,8 +21,6 @@ const listeningParts: ListeningPart[] = [
     description: 'Nghe mô tả hình ảnh và luyện chép từng câu.',
     questionsCount: 6,
     duration: 480,
-    progress: 0,
-    status: 'not_started',
     accent: 'US',
   },
   {
@@ -32,8 +30,6 @@ const listeningParts: ListeningPart[] = [
     description: 'Nghe hỏi đáp ngắn và luyện phản xạ câu trả lời.',
     questionsCount: 25,
     duration: 780,
-    progress: 0,
-    status: 'not_started',
     accent: 'US/UK',
   },
   {
@@ -43,8 +39,6 @@ const listeningParts: ListeningPart[] = [
     description: 'Luyện nghe hội thoại theo từng đoạn transcript.',
     questionsCount: 39,
     duration: 1200,
-    progress: 0,
-    status: 'not_started',
     accent: 'US/AU',
   },
   {
@@ -54,8 +48,6 @@ const listeningParts: ListeningPart[] = [
     description: 'Luyện nghe bài nói ngắn, thông báo và voicemail.',
     questionsCount: 30,
     duration: 1080,
-    progress: 0,
-    status: 'not_started',
     accent: 'UK/AU',
   },
 ];
@@ -101,7 +93,6 @@ const mapSentence = (sentence: ListeningDictationSentence): ListeningExerciseGro
   startMs: sentence.start_ms,
   endMs: sentence.end_ms,
   orderIndex: sentence.order_index,
-  completed: sentence.completed,
   hintLevels: normalizeHintLevels(sentence.hint_levels),
 });
 
@@ -131,7 +122,6 @@ const mapPublishedTest = (test: PublishedTest): ListeningTest => ({
   name: test.testNumber ? `Test ${test.testNumber}` : test.title,
   title: test.title,
   description: test.description,
-  progress: 0,
   totalQuestions: test.totalQuestions,
   estimatedMinutes: test.durationMinutes,
   parts: listeningParts,
