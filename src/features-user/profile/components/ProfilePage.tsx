@@ -84,7 +84,7 @@ export const ProfilePage = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/');
   };
 
   if (isSessionChecked && !isAuthenticated) {

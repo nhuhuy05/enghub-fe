@@ -9,12 +9,6 @@ import {
 } from 'lucide-react';
 import { useListening } from '../hooks/useListening';
 
-const statusLabel = {
-  not_started: 'Chưa bắt đầu',
-  in_progress: 'Đang luyện',
-  completed: 'Hoàn thành',
-};
-
 export const ListeningPage = () => {
   const navigate = useNavigate();
   const {
@@ -122,15 +116,7 @@ export const ListeningPage = () => {
                     </div>
                     <h3 className="text-lg font-black text-[#111827]">{part.title}</h3>
                     <p className="mt-2 line-clamp-2 text-sm font-medium leading-6 text-[#667085]">{part.description}</p>
-                    <div className="mt-auto pt-5">
-                      <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#667085]">
-                        <span>{statusLabel[part.status]}</span>
-                        <span>{Math.round((part.progress / 100) * part.questionsCount)}/{part.questionsCount} câu</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-white">
-                        <div className="h-full rounded-full bg-[#004ac6]" style={{ width: `${part.progress}%` }} />
-                      </div>
-                    </div>
+                    <p className="mt-auto pt-5 text-xs font-bold text-[#667085]">{part.questionsCount} câu</p>
                   </button>
                 ))}
               </div>

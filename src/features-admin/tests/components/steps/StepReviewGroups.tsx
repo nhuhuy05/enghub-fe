@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, ArrowLeft, ArrowRight, Loader2, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, Check, Link2, Loader2, X } from 'lucide-react';
 import { AudioTranscriptEditor } from '../review-groups/AudioTranscriptEditor';
 import { AiGroupSupportControl } from '../review-groups/AiGroupSupportControl';
 import { GroupSidebar } from '../review-groups/GroupSidebar';
@@ -26,6 +26,8 @@ export const StepReviewGroups = ({ testId, nextStep, prevStep }: StepReviewGroup
     addImage,
     addImagePassage,
     audioAssets,
+    autoLinkMedia,
+    autoLinking,
     availableParts,
     blockedReviewCount,
     detail,
@@ -55,6 +57,8 @@ export const StepReviewGroups = ({ testId, nextStep, prevStep }: StepReviewGroup
     setCorrectAnswer,
     setDetailValue,
     setQuestionValue,
+    setSuccessMsg,
+    successMsg,
   } = useReviewGroupsController({ testId, nextStep, prevStep });
   const [dismissedPopupForError, setDismissedPopupForError] = useState('');
   const showAiContextPopup = Boolean(errorMsg && isAiMissingContextError(errorMsg) && dismissedPopupForError !== errorMsg);
@@ -78,6 +82,22 @@ export const StepReviewGroups = ({ testId, nextStep, prevStep }: StepReviewGroup
         <div className="flex items-center gap-2 rounded-xl border border-[#fee4e2] bg-[#fef3f2] p-4 text-sm font-semibold text-[#b42318]">
           <AlertCircle className="h-5 w-5 shrink-0" />
           {errorMsg}
+        </div>
+      )}
+      {successMsg && (
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-[#d3f5d5] bg-[#edfcf2] p-4 text-sm font-semibold text-[#027a48]">
+          <div className="flex items-center gap-2">
+            <Check className="h-5 w-5 shrink-0" />
+            {successMsg}
+          </div>
+          <button
+            type="button"
+            onClick={() => setSuccessMsg('')}
+            className="rounded p-1 text-[#027a48] transition hover:bg-[#d3f5d5]"
+            title="Đóng thông báo"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
       {showAiContextPopup && (
@@ -124,11 +144,13 @@ export const StepReviewGroups = ({ testId, nextStep, prevStep }: StepReviewGroup
           filteredGroups={filteredGroups}
           selectedGroupId={selectedGroupId}
           saving={saving}
+          autoLinking={autoLinking}
           reviewableCount={reviewableGroups.length}
           blockedReviewCount={blockedReviewCount}
           onSelectPart={(partNumber) => void selectPart(partNumber)}
           onSelectGroup={(groupId) => void selectGroup(groupId)}
           onMarkAllReviewed={() => void markAllReviewed()}
+          onAutoLink={() => void autoLinkMedia()}
         />
 
         <section className="min-w-0">
@@ -169,7 +191,19 @@ export const StepReviewGroups = ({ testId, nextStep, prevStep }: StepReviewGroup
 
                 {detail.missing_flags && detail.missing_flags.length > 0 && (
                   <div className="rounded-xl border border-[#fecdca] bg-[#fff1f0] p-3">
-                    <p className="text-xs font-bold uppercase text-[#b42318]">Thiếu dữ liệu</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs font-bold uppercase text-[#b42318]">Thiếu dữ liệu</p>
+                      <button
+                        type="button"
+                        onClick={() => void autoLinkMedia()}
+                        disabled={saving || autoLinking}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#fecdca] bg-white px-2.5 py-1 text-xs font-bold text-[#b42318] shadow-sm transition hover:bg-[#fef3f2] disabled:opacity-50"
+                        title="Tự động tìm kiếm file audio/hình ảnh đã upload để liên kết vào câu hỏi này"
+                      >
+                        <Link2 className="h-3.5 w-3.5 text-[#b42318]" />
+                        {autoLinking ? 'Đang liên kết...' : 'Tự động liên kết'}
+                      </button>
+                    </div>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {detail.missing_flags.map((flag) => (
                         <span key={flag} className="rounded bg-white px-2 py-1 text-xs font-bold text-[#b42318]">
@@ -233,14 +267,35 @@ export const StepReviewGroups = ({ testId, nextStep, prevStep }: StepReviewGroup
           <ArrowLeft className="h-4.5 w-4.5" />
           Quay lại
         </button>
-        <button
-          onClick={() => void goNextStep()}
-          disabled={saving}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#004ac6] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#003da3] disabled:opacity-40"
-        >
-          Tiếp tục
-          <ArrowRight className="h-4.5 w-4.5" />
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void autoLinkMedia()}
+            disabled={saving || autoLinking}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#004ac6] bg-[#f0f4ff] px-4 py-2.5 text-sm font-semibold text-[#004ac6] transition hover:bg-[#e1ecff] disabled:opacity-50"
+            title="Tự động liên kết toàn bộ file audio, hình ảnh đã upload vào các câu hỏi"
+          >
+            {autoLinking ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin text-[#004ac6]" />
+                Đang liên kết...
+              </>
+            ) : (
+              <>
+                <Link2 className="h-4 w-4 text-[#004ac6]" />
+                Tự động liên kết Media
+              </>
+            )}
+          </button>
+          <button
+            onClick={() => void goNextStep()}
+            disabled={saving}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#004ac6] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#003da3] disabled:opacity-40"
+          >
+            Tiếp tục
+            <ArrowRight className="h-4.5 w-4.5" />
+          </button>
+        </div>
       </div>
     </div>
   );

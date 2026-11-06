@@ -4,7 +4,7 @@ export type AppRole = 'STUDENT' | 'ADMIN';
 
 const ROLE_DASHBOARD_PATHS: Record<AppRole, string> = {
   ADMIN: '/admin/users',
-  STUDENT: '/dashboard',
+  STUDENT: '/',
 };
 
 const normalizeRoleName = (roleName: string): AppRole | null => {

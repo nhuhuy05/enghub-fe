@@ -69,12 +69,12 @@ export const AudioRangePlayer = ({
   if (!audio.url) return null;
 
   if (hiddenControls) {
-    return <audio ref={audioRef} autoPlay={autoPlay} className="hidden" src={audio.url} />;
+    return <audio ref={audioRef} autoPlay={autoPlay} preload="metadata" className="hidden" src={audio.url} />;
   }
 
   return (
     <div className="rounded-xl border border-[#d8dced] bg-[#f9fafb] p-2 px-3">
-      <audio ref={audioRef} autoPlay={autoPlay} controls className="w-full" src={audio.url} />
+      <audio ref={audioRef} autoPlay={autoPlay} preload="metadata" controls className="w-full" src={audio.url} />
       <div className="mt-2 flex items-center gap-3">
         <button
           type="button"

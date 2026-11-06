@@ -26,7 +26,6 @@ export const ListeningPracticePage = () => {
     activeSentence,
     currentSentenceNumber,
     totalSentencesInGroup,
-    completedCount,
     hintLevel,
     setHintLevel,
     dictationWordAnswers,
@@ -142,7 +141,6 @@ export const ListeningPracticePage = () => {
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain border-t border-[#e4e7ec] pt-3 pr-1">
             {session.groups.map((group) => {
               const isOpen = group.id === activeGroupId;
-              const groupDone = group.sentences.filter((sentence) => sentence.completed).length;
               return (
                 <div key={group.id}>
                   <button
@@ -156,7 +154,7 @@ export const ListeningPracticePage = () => {
                       <Headphones className="h-4 w-4" />
                       {group.title}
                     </span>
-                    <span className="text-xs font-bold">{isOpen ? completedCount : groupDone}/{group.sentences.length}</span>
+                    <span className="text-xs font-bold">{group.sentences.length} câu</span>
                   </button>
 
                   {isOpen && (

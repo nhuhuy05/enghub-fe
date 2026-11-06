@@ -1,4 +1,4 @@
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, LogIn } from 'lucide-react';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -7,7 +7,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   loading?: boolean;
-  tone?: 'danger' | 'warning';
+  tone?: 'danger' | 'warning' | 'primary';
   onCancel: () => void;
   onConfirm: () => void;
 }
@@ -28,18 +28,22 @@ export const ConfirmDialog = ({
   const confirmClassName =
     tone === 'danger'
       ? 'bg-[#d92d20] hover:bg-[#b42318]'
-      : 'bg-[#ff8a1f] hover:bg-[#ea760b]';
+      : tone === 'warning'
+      ? 'bg-[#ff8a1f] hover:bg-[#ea760b]'
+      : 'bg-[#004ac6] hover:bg-[#003da3]';
   const iconClassName =
     tone === 'danger'
       ? 'bg-red-50 text-[#d92d20]'
-      : 'bg-[#fff4e5] text-[#ff8a1f]';
+      : tone === 'warning'
+      ? 'bg-[#fff4e5] text-[#ff8a1f]'
+      : 'bg-[#eaf0ff] text-[#004ac6]';
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#111827]/45 p-4">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#111827]/45 p-4">
       <div className="w-full max-w-md rounded-xl border border-[#d8dced] bg-white p-5 shadow-2xl">
         <div className="flex items-start gap-3">
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconClassName}`}>
-            <AlertTriangle className="h-5 w-5" />
+            {tone === 'primary' ? <LogIn className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
           </div>
           <div className="min-w-0">
             <h2 className="text-base font-bold text-[#111827]">{title}</h2>

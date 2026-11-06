@@ -5,8 +5,8 @@ EngHub React la frontend cho nen tang hoc tieng Anh va luyen TOEIC EngHub. Ung d
 ## Noi Dung Chinh
 
 - Student: trang chu, ho so ca nhan, tu vung, nghe chep chinh ta, doc song ngu, danh sach de thi, lam bai, lich su lam bai va ket qua.
-- Admin: quan ly nguoi dung, vai tro, de thi, tao de theo luong nhieu buoc, upload media, review question group, publish/unpublish de, quan ly noi dung nghe, doc va tu vung.
-- Xac thuc: JWT luu trong `localStorage`, Zustand quan ly session, axios interceptor tu gan Bearer token va xu ly loi `401/403`.
+- Admin: quan ly nguoi dung va gan role ADMIN/STUDENT, de thi, tao de theo luong nhieu buoc, upload media, review question group, publish/unpublish de, quan ly noi dung nghe, doc va tu vung.
+- Xac thuc: JWT luu trong `localStorage`, Zustand quan ly session, axios interceptor tu gan Bearer token va xu ly loi `401`.
 
 ## Tech Stack
 
@@ -28,7 +28,7 @@ EngHub React la frontend cho nen tang hoc tieng Anh va luyen TOEIC EngHub. Ung d
 - npm
 - Backend EngHub dang chay, mac dinh tai `http://localhost:8080/enghub`
 
-Frontend doc base URL tu bien moi truong `VITE_API_BASE_URL`. Neu khong cau hinh, app dung fallback trong [src/api/apiClient.ts](c:/Code/enghub/enghub-react/src/api/apiClient.ts).
+Frontend doc base URL tu bien moi truong `VITE_API_BASE_URL`. Neu khong cau hinh, app dung fallback trong [src/api/apiClient.ts](src/api/apiClient.ts).
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080/enghub
@@ -68,12 +68,8 @@ src/
     layout/
     ui/
   features-admin/
-    assignments/
-    classes/
-    dashboard/
     listening/
     reading/
-    roles/
     tests/
     users/
   features-user/
@@ -96,11 +92,11 @@ Quy uoc trong moi feature:
 - `types`: TypeScript types cua feature.
 - `utils`, `constants`, `data`: helper, nhan hien thi hoac du lieu cuc bo khi feature can.
 
-Alias `@/*` tro toi `src/*`, cau hinh trong [vite.config.ts](c:/Code/enghub/enghub-react/vite.config.ts) va [tsconfig.app.json](c:/Code/enghub/enghub-react/tsconfig.app.json).
+Alias `@/*` tro toi `src/*`, cau hinh trong [vite.config.ts](vite.config.ts) va [tsconfig.app.json](tsconfig.app.json).
 
 ## Routing Va Phan Quyen
 
-Routing chinh nam trong [src/routes/AppRoutes.tsx](c:/Code/enghub/enghub-react/src/routes/AppRoutes.tsx).
+Routing chinh nam trong [src/routes/AppRoutes.tsx](src/routes/AppRoutes.tsx).
 
 ### Public
 
@@ -137,7 +133,7 @@ Routing chinh nam trong [src/routes/AppRoutes.tsx](c:/Code/enghub/enghub-react/s
 - `/admin/vocabulary`
 - `/admin/vocabulary/topics/:topicId`
 
-Role mac dinh duoc xu ly trong [src/features-user/auth/utils/roleUtils.ts](c:/Code/enghub/enghub-react/src/features-user/auth/utils/roleUtils.ts):
+Role mac dinh duoc xu ly trong [src/features-user/auth/utils/roleUtils.ts](src/features-user/auth/utils/roleUtils.ts):
 
 - `ADMIN` -> `/admin/users`
 - `STUDENT` -> `/dashboard`
@@ -146,10 +142,10 @@ Role mac dinh duoc xu ly trong [src/features-user/auth/utils/roleUtils.ts](c:/Co
 
 Auth duoc trien khai qua:
 
-- [src/features-user/auth/services/authService.ts](c:/Code/enghub/enghub-react/src/features-user/auth/services/authService.ts)
-- [src/features-user/auth/hooks/useAuth.ts](c:/Code/enghub/enghub-react/src/features-user/auth/hooks/useAuth.ts)
-- [src/features-user/auth/store/useAuthStore.ts](c:/Code/enghub/enghub-react/src/features-user/auth/store/useAuthStore.ts)
-- [src/api/apiClient.ts](c:/Code/enghub/enghub-react/src/api/apiClient.ts)
+- [src/features-user/auth/services/authService.ts](src/features-user/auth/services/authService.ts)
+- [src/features-user/auth/hooks/useAuth.ts](src/features-user/auth/hooks/useAuth.ts)
+- [src/features-user/auth/store/useAuthStore.ts](src/features-user/auth/store/useAuthStore.ts)
+- [src/api/apiClient.ts](src/api/apiClient.ts)
 
 Luong chinh:
 
@@ -159,7 +155,9 @@ Luong chinh:
 4. Khi app khoi dong lai, `App.tsx` goi `initializeAuth()`.
 5. `initializeAuth()` introspect token bang `POST /auth/introspect`, sau do load lai user.
 6. Axios interceptor tu gan `Authorization: Bearer <token>` cho request.
-7. Khi backend tra `401` hoac `403`, app xoa session local va chuyen ve `/login`.
+7. Khi backend tra `401`, app xoa session local va chuyen ve `/login`.
+
+Google login/register, quen mat khau va tuy chon Remember me chua duoc trien khai; cac control placeholder nay da duoc bo. Cach luu token hien tai khong thay doi.
 
 ## API Va Tai Lieu FE-BE
 
@@ -173,14 +171,9 @@ export interface ApiResponse<T> {
 }
 ```
 
-Type dung chung nam o [src/types/apiTypes.ts](c:/Code/enghub/enghub-react/src/types/apiTypes.ts).
+Type dung chung nam o [src/types/apiTypes.ts](src/types/apiTypes.ts).
 
-Tai lieu contract theo feature:
-
-- [Admin User Management](c:/Code/enghub/enghub-react/docs/admin-user-management-fe-guide.md)
-- [Listening Dictation](c:/Code/enghub/enghub-react/docs/listening-dictation-fe-guide.md)
-- [Reading Bilingual Practice](c:/Code/enghub/enghub-react/docs/reading-bilingual-fe-guide.md)
-- [Practice Question AI Chat Streaming](c:/Code/enghub/enghub-react/docs/practice-question-chat-fe-guide.md)
+Checkout nay khong co thu muc `docs/` cho cac guide FE-BE. Tham khao OpenAPI cua backend va cac file `services`/`types` theo feature de xem contract hien tai.
 
 Cac nhom endpoint dang duoc frontend goi:
 
@@ -207,12 +200,14 @@ Cac nhom endpoint dang duoc frontend goi:
 ### Admin
 
 - `features-admin/users`: danh sach user, loc, phan trang, tao/sua/xoa, bat tat trang thai va gan role.
-- `features-admin/roles`: entry quan ly role hien redirect ve user management theo route hien tai.
 - `features-admin/tests`: danh sach de, tao de, import cau hoi, upload media, review groups, preview, publish/unpublish.
 - `features-admin/listening`: quan ly transcript lines cho listening dictation.
 - `features-admin/reading`: quan ly reading lessons tu TOEIC Part 7, ho tro AI translation/vocabulary.
-- `features-admin/classes` va `features-admin/assignments`: khung giao dien cho lop hoc va bai giao.
 - Admin vocabulary management nam trong `features-user/vocabulary` va duoc route qua `/admin/vocabulary`.
+
+Placeholder dashboard/classes/assignments/roles va du lieu mau reading da duoc xoa. Cac redirect URL cu van duoc giu. `GET /roles` van phuc vu trang quan ly nguoi dung.
+
+Modal chon MOCK/PRACTICE nam trong `features-user/test-attempt/components/ModeSelectorModal.tsx`, duoc TestCatalogPage su dung. Listening van ho tro nghe, nhap dap an, goi y va ban dich; chua luu tien do hoan thanh, nen UI khong hien thanh tien do mac dinh 0. Vocabulary progress va lich su lam bai van hoat dong nhu truoc.
 
 ## Ghi Chu Phat Trien
 

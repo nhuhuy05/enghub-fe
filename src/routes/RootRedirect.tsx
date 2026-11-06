@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/features-user/auth/hooks/useAuth';
-import { getDefaultDashboardPath } from '@/features-user/auth/utils/roleUtils';
+import { getUserRoles } from '@/features-user/auth/utils/roleUtils';
 import { HomePage } from '@/features-user/home/components/HomePage';
 
 export const RootRedirect = () => {
@@ -14,9 +14,12 @@ export const RootRedirect = () => {
     );
   }
 
-  if (!isAuthenticated) {
-    return <HomePage />;
+  if (isAuthenticated) {
+    const roles = getUserRoles(user);
+    if (roles.includes('ADMIN')) {
+      return <Navigate to="/admin/users" replace />;
+    }
   }
 
-  return <Navigate to={getDefaultDashboardPath(user)} replace />;
+  return <HomePage />;
 };

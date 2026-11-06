@@ -3,6 +3,7 @@ import { useAuth } from '@/features-user/auth/hooks/useAuth';
 import { EngHubLogo } from '@/components/brand/EngHubLogo';
 
 const navItems = [
+  { label: 'Trang chủ', href: '/' },
   { label: 'Từ vựng', href: '/vocabulary' },
   { label: 'Nghe', href: '/listening' },
   { label: 'Đọc', href: '/reading' },
@@ -16,7 +17,7 @@ export const StudentTopMenu = () => {
   return (
     <header className="fixed left-0 top-0 z-50 w-full border-b border-[#d8dced] bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/dashboard" className="shrink-0" aria-label="EngHub dashboard">
+        <Link to="/" className="shrink-0" aria-label="EngHub home">
           <EngHubLogo markClassName="h-8 w-11" textClassName="text-2xl" />
         </Link>
 
@@ -25,6 +26,7 @@ export const StudentTopMenu = () => {
             <NavLink
               key={item.href}
               to={item.href}
+              end={item.href === '/'}
               className={({ isActive }) =>
                 `pb-1 text-sm font-medium transition ${
                   isActive

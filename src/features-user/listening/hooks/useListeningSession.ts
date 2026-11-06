@@ -57,11 +57,6 @@ export const useListeningSession = (testId: string, partId: string) => {
   const currentSentenceNumber = activeItem ? activeItem.sentenceIndex + 1 : 0;
   const totalSentencesInGroup = activeGroup?.sentences.length || 0;
 
-  const completedCount = useMemo(() => {
-    if (!activeGroup) return 0;
-    return activeGroup.sentences.filter((sentence) => sentence.completed).length;
-  }, [activeGroup]);
-
   const selectSentence = (groupId: string, sentenceId: string) => {
     setActiveGroupId(groupId);
     setActiveSentenceId(sentenceId);
@@ -102,7 +97,6 @@ export const useListeningSession = (testId: string, partId: string) => {
     activeSentence,
     currentSentenceNumber,
     totalSentencesInGroup,
-    completedCount,
     hintLevel,
     setHintLevel,
     dictationWordAnswers,

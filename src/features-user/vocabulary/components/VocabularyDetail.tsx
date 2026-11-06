@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpenText, Loader2, Volume2 } from 'lucide-react';
 import { useVocabularyDetail } from '../hooks/useVocabularyDetail';
 import { getVocabularyErrorMessage, vocabularyService } from '../services/vocabularyService';
 import type { Vocabulary, VocabularyReviewOption, VocabularyReviewRating } from '../types';
+import { useAuthStore } from '@/features-user/auth/store/useAuthStore';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 type DetailTab = 'words' | 'flashcard';
 
@@ -33,6 +35,8 @@ export const VocabularyDetail = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const numericTopicId = Number(topicId);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { topic, words, setWords, isLoading, error } = useVocabularyDetail(Number.isFinite(numericTopicId) ? numericTopicId : null);
   const [activeTab, setActiveTab] = useState<DetailTab>('flashcard');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,6 +44,7 @@ export const VocabularyDetail = () => {
   const [learningId, setLearningId] = useState<number | null>(null);
   const [reviewingRating, setReviewingRating] = useState<VocabularyReviewRating | null>(null);
   const [actionError, setActionError] = useState('');
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const currentWord = words[currentIndex] ?? null;
   const progressText = useMemo(() => {
@@ -56,6 +61,10 @@ export const VocabularyDetail = () => {
   };
 
   const markCurrentWordLearned = async () => {
+    if (!isAuthenticated) {
+      setShowLoginPrompt(true);
+      return;
+    }
     if (!currentWord || currentWord.progress || learningId === currentWord.id) return;
 
     try {
@@ -71,13 +80,17 @@ export const VocabularyDetail = () => {
   };
 
   const flipCard = () => {
-    if (!revealed) {
+    if (!revealed && isAuthenticated) {
       void markCurrentWordLearned();
     }
     setRevealed((value) => !value);
   };
 
   const rateCurrentWord = async (rating: VocabularyReviewRating) => {
+    if (!isAuthenticated) {
+      setShowLoginPrompt(true);
+      return;
+    }
     if (!currentWord || reviewingRating) return;
 
     try {
@@ -168,6 +181,20 @@ export const VocabularyDetail = () => {
           />
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={showLoginPrompt}
+        title="Yêu cầu đăng nhập"
+        message="Bạn cần đăng nhập tài khoản để lưu tiến độ học và kết quả ôn tập flashcard."
+        confirmLabel="Đăng nhập"
+        cancelLabel="Hủy"
+        tone="primary"
+        onCancel={() => setShowLoginPrompt(false)}
+        onConfirm={() => {
+          setShowLoginPrompt(false);
+          navigate('/login', { state: { from: location } });
+        }}
+      />
     </main>
   );
 };
