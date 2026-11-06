@@ -2,11 +2,15 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpenText, Loader2, Search, Sparkles } from 'lucide-react';
 import { useVocabulary } from '../hooks/useVocabulary';
+import { useAuthStore } from '@/features-user/auth/store/useAuthStore';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export const VocabularyPage = () => {
   const { topics, dueCount, isLoading, error } = useVocabulary();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const filteredTopics = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -56,7 +60,13 @@ export const VocabularyPage = () => {
         <section className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <button
             type="button"
-            onClick={() => navigate('/vocabulary/review')}
+            onClick={() => {
+              if (!isAuthenticated) {
+                setShowLoginPrompt(true);
+                return;
+              }
+              navigate('/vocabulary/review');
+            }}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#004ac6] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#003da3]"
           >
             <Sparkles className="h-4 w-4" />
@@ -115,6 +125,20 @@ export const VocabularyPage = () => {
           </section>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={showLoginPrompt}
+        title="Yêu cầu đăng nhập"
+        message="Bạn cần đăng nhập tài khoản để sử dụng tính năng ôn tập từ vựng đến hạn."
+        confirmLabel="Đăng nhập"
+        cancelLabel="Hủy"
+        tone="primary"
+        onCancel={() => setShowLoginPrompt(false)}
+        onConfirm={() => {
+          setShowLoginPrompt(false);
+          navigate('/login', { state: { from: { pathname: '/vocabulary/review' } } });
+        }}
+      />
     </main>
   );
 };

@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Check,
   FileAudio,
+  Link2,
   Loader2,
 } from 'lucide-react';
 import { adminTestService } from '../../services/adminTestService';
@@ -31,6 +32,7 @@ export const StepMediaUpload = ({ testId, nextStep, prevStep }: StepMediaUploadP
   const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [autoLinking, setAutoLinking] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -104,18 +106,58 @@ export const StepMediaUpload = ({ testId, nextStep, prevStep }: StepMediaUploadP
     }
   };
 
+  const handleAutoLink = async (silent = false) => {
+    try {
+      setAutoLinking(true);
+      setErrorMsg('');
+      const res = await adminTestService.autoLinkMedia(testId);
+      if (res.code === 1000) {
+        const { linked_audios, linked_images, linked_passages, total_groups } = res.result;
+        const totalLinked = linked_audios + linked_images + linked_passages;
+        if (totalLinked > 0) {
+          setSuccessMsg(
+            `Đã tự động liên kết thành công ${linked_audios} audio, ${linked_images} hình ảnh biểu đồ, ${linked_passages} bài đọc vào các câu hỏi!`
+          );
+        } else if (!silent) {
+          if (total_groups === 0) {
+            setSuccessMsg('Đề thi chưa có câu hỏi nào. Khi bạn nhập Excel ở bước sau, media sẽ được tự động liên kết.');
+          } else {
+            setSuccessMsg('Tất cả media phù hợp đã được gắn vào câu hỏi trước đó.');
+          }
+        }
+      } else if (!silent) {
+        setErrorMsg(res.message || 'Tự động liên kết media thất bại.');
+      }
+    } catch (err) {
+      if (!silent) {
+        setErrorMsg(getErrorMessage(err, 'Tự động liên kết media thất bại.'));
+      }
+    } finally {
+      setAutoLinking(false);
+    }
+  };
+
   const uploadQueued = async () => {
     const targets = uploadItems.filter((item) => item.status === 'queued' || item.status === 'failed');
     if (!targets.length) return;
     setUploading(true);
     setErrorMsg('');
     setSuccessMsg('');
-    for (const item of targets) {
-      await uploadOne(item);
-    }
+    const CONCURRENCY = 6;
+    let nextIndex = 0;
+    const worker = async () => {
+      while (nextIndex < targets.length) {
+        const currentItem = targets[nextIndex++];
+        if (currentItem) {
+          await uploadOne(currentItem);
+        }
+      }
+    };
+    const workers = Array.from({ length: Math.min(CONCURRENCY, targets.length) }, () => worker());
+    await Promise.all(workers);
     setUploading(false);
-    setSuccessMsg('Đã tải xong hàng đợi.');
     await fetchMedia();
+    await handleAutoLink(true);
   };
 
   const deleteMedia = async (assetId: number) => {
@@ -270,13 +312,36 @@ export const StepMediaUpload = ({ testId, nextStep, prevStep }: StepMediaUploadP
           <ArrowLeft className="h-4 w-4" />
           Quay lại
         </button>
-        <button
-          onClick={nextStep}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#004ac6] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#003da3]"
-        >
-          Tiếp tục
-          <ArrowRight className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {mediaAssets.length > 0 && (
+            <button
+              type="button"
+              onClick={() => void handleAutoLink(false)}
+              disabled={autoLinking || uploading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#004ac6] bg-[#f0f4ff] px-3.5 py-2 text-sm font-semibold text-[#004ac6] transition hover:bg-[#e1ecff] disabled:opacity-50"
+              title="Tự động liên kết audio và hình ảnh vào các câu hỏi đã có theo quy ước đặt tên"
+            >
+              {autoLinking ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-[#004ac6]" />
+                  Đang liên kết...
+                </>
+              ) : (
+                <>
+                  <Link2 className="h-4 w-4 text-[#004ac6]" />
+                  Tự động liên kết Media
+                </>
+              )}
+            </button>
+          )}
+          <button
+            onClick={nextStep}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#004ac6] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#003da3]"
+          >
+            Tiếp tục
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

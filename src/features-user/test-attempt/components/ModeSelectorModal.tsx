@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock3, FileText, Loader2, PlayCircle, Target, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock3, FileText, Loader2, PlayCircle, Target, X } from 'lucide-react';
 import type { AttemptMode } from '../types';
 
 const ALL_PARTS = [1, 2, 3, 4, 5, 6, 7];
@@ -18,7 +18,7 @@ const getQuestionCount = (parts: number[]) =>
 
 export const ModeSelectorModal = ({
   canStart,
-  isAuthenticated,
+  errorMsg,
   mode,
   onClose,
   onModeChange,
@@ -30,7 +30,7 @@ export const ModeSelectorModal = ({
   testTitle,
 }: {
   canStart: boolean;
-  isAuthenticated: boolean;
+  errorMsg?: string;
   mode: AttemptMode;
   onClose: () => void;
   onModeChange: (mode: AttemptMode) => void;
@@ -60,6 +60,13 @@ export const ModeSelectorModal = ({
           <p className="text-sm font-semibold text-[#667085]">{testTitle}</p>
         </div>
 
+        {errorMsg && (
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-[#fee4e2] bg-[#fef3f2] p-3 text-sm font-bold text-[#b42318]">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            {errorMsg}
+          </div>
+        )}
+
         <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-[#f4f7fb] p-1">
           <ModeTab active={mode === 'MOCK'} icon={<FileText className="h-4 w-4" />} label="Luyện thi" onClick={() => onModeChange('MOCK')} />
           <ModeTab active={mode === 'PRACTICE'} icon={<Target className="h-4 w-4" />} label="Luyện tập" onClick={() => onModeChange('PRACTICE')} />
@@ -73,7 +80,7 @@ export const ModeSelectorModal = ({
               </div>
               <PartSelectionCard
                 buttonDisabled={!canStart}
-                buttonLabel={isAuthenticated ? 'Bắt đầu' : 'Đăng nhập'}
+                buttonLabel="Vào luyện tập"
                 description={null}
                 icon={<CheckCircle2 className="h-5 w-5" />}
                 mode="PRACTICE"
@@ -103,13 +110,13 @@ export const ModeSelectorModal = ({
                       </div>
                     </div>
                   </div>
-                  <StartButton disabled={starting} label={isAuthenticated ? 'Bắt đầu' : 'Đăng nhập'} onClick={() => onStart('MOCK', ALL_PARTS)} starting={starting} />
+                  <StartButton disabled={starting} label="Bắt đầu làm bài" onClick={() => onStart('MOCK', ALL_PARTS)} starting={starting} />
                 </div>
               </div>
 
               <PartSelectionCard
                 buttonDisabled={!canStart}
-                buttonLabel={isAuthenticated ? 'Bắt đầu' : 'Đăng nhập'}
+                buttonLabel="Bắt đầu làm bài"
                 description="Chọn Part cụ thể để thi thử"
                 icon={<Target className="h-5 w-5" />}
                 mode="MOCK"

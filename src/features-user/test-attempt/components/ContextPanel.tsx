@@ -58,6 +58,7 @@ export const ContextPanel = ({
                 key={`${image.id}-${image.orderIndex ?? 0}`}
                 src={image.url}
                 alt={image.label || 'Question image'}
+                loading="lazy"
                 className="mx-auto max-h-[650px] w-full object-contain"
               />
             ) : null
@@ -100,6 +101,7 @@ export const ContextPanel = ({
                   <img
                     src={passage.url}
                     alt={passage.title || 'Passage'}
+                    loading="lazy"
                     className="mx-auto max-h-[520px] w-full object-contain"
                   />
                 )}

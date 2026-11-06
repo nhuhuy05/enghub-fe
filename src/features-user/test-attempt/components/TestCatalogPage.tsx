@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertTriangle, BookOpen, Clock3, Loader2 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features-user/auth/hooks/useAuth';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { getErrorMessage, testAttemptService } from '../services/testAttemptService';
 import type { AttemptMode, PublishedTest, PublishedTestCollection } from '../types';
 import { ModeSelectorModal } from './ModeSelectorModal';
@@ -21,6 +22,7 @@ export const TestCatalogPage = () => {
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
     const loadCatalog = async () => {
@@ -64,7 +66,7 @@ export const TestCatalogPage = () => {
     if (!selectedTest || partNumbers.length === 0 || starting) return;
 
     if (!isAuthenticated) {
-      navigate('/login', { state: { from: location } });
+      setShowLoginPrompt(true);
       return;
     }
 
@@ -196,9 +198,12 @@ export const TestCatalogPage = () => {
       {selectedTest && (
         <ModeSelectorModal
           canStart={selectedParts.length > 0 && !starting}
-          isAuthenticated={isAuthenticated}
+          errorMsg={errorMsg}
           mode={mode}
-          onClose={() => setSelectedTest(null)}
+          onClose={() => {
+            setSelectedTest(null);
+            setErrorMsg('');
+          }}
           onModeChange={handleModeChange}
           onSelectAll={() =>
             setSelectedParts((current) => (current.length === ALL_PARTS.length ? [] : ALL_PARTS))
@@ -210,6 +215,20 @@ export const TestCatalogPage = () => {
           testTitle={selectedTest.title}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={showLoginPrompt}
+        title="Yêu cầu đăng nhập"
+        message="Bạn cần đăng nhập tài khoản để bắt đầu làm bài thi và lưu lại kết quả."
+        confirmLabel="Đăng nhập"
+        cancelLabel="Hủy"
+        tone="primary"
+        onCancel={() => setShowLoginPrompt(false)}
+        onConfirm={() => {
+          setShowLoginPrompt(false);
+          navigate('/login', { state: { from: location } });
+        }}
+      />
     </main>
   );
 };

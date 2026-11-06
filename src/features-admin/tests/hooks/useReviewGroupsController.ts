@@ -49,10 +49,12 @@ export const useReviewGroupsController = ({
   const [loadingList, setLoadingList] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autoLinking, setAutoLinking] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [generatingAiAction, setGeneratingAiAction] = useState<AiGenerateAction | null>(null);
   const [dirtyVersion, setDirtyVersion] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const detailRef = useRef<QuestionGroupDetail | null>(null);
   const lastSavedDetailRef = useRef<QuestionGroupDetail | null>(null);
   const dirtyRef = useRef<DirtyState>(createDirtyState());
@@ -175,6 +177,33 @@ export const useReviewGroupsController = ({
   useEffect(() => {
     void loadGroups();
   }, [loadGroups]);
+
+  const autoLinkMedia = useCallback(async () => {
+    try {
+      setAutoLinking(true);
+      setErrorMsg('');
+      setSuccessMsg('');
+      const res = await adminTestService.autoLinkMedia(testId);
+      if (res.code === 1000) {
+        const { linked_audios, linked_images, linked_passages } = res.result;
+        const total = linked_audios + linked_images + linked_passages;
+        if (total > 0) {
+          setSuccessMsg(
+            `Đã tự động liên kết thành công ${linked_audios} audio, ${linked_images} hình ảnh biểu đồ, ${linked_passages} bài đọc vào các câu hỏi!`
+          );
+        } else {
+          setSuccessMsg('Tất cả media phù hợp đã được liên kết trước đó hoặc không tìm thấy file phù hợp.');
+        }
+        await loadGroups(selectedGroupIdRef.current || undefined);
+      } else {
+        setErrorMsg(res.message || 'Tự động liên kết media thất bại.');
+      }
+    } catch (err) {
+      setErrorMsg(getErrorMessage(err, 'Tự động liên kết media thất bại.'));
+    } finally {
+      setAutoLinking(false);
+    }
+  }, [loadGroups, testId]);
 
   const resetDirtyState = () => {
     dirtyRef.current = createDirtyState();
@@ -604,6 +633,8 @@ export const useReviewGroupsController = ({
     addImage,
     addImagePassage,
     audioAssets,
+    autoLinkMedia,
+    autoLinking,
     availableParts,
     blockedReviewCount,
     detail,
@@ -633,5 +664,7 @@ export const useReviewGroupsController = ({
     setCorrectAnswer,
     setDetailValue,
     setQuestionValue,
+    setSuccessMsg,
+    successMsg,
   };
 };

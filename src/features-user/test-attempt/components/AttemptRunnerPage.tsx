@@ -351,11 +351,29 @@ export const AttemptRunnerPage = () => {
     );
   }
 
-  if (loading || !content) {
+  if (loading) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#f6f7fc]">
         <Loader2 className="h-8 w-8 animate-spin text-[#004ac6]" />
         <p className="text-sm font-bold text-[#667085]">Đang tải bài làm...</p>
+      </main>
+    );
+  }
+
+  if (!content) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#f6f7fc] p-4 text-center">
+        <div className="flex items-center gap-2 rounded-xl border border-[#fee4e2] bg-[#fef3f2] p-4 text-sm font-bold text-[#b42318]">
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+          {errorMsg || 'Không thể tải nội dung bài thi.'}
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/tests')}
+          className="rounded-xl bg-[#004ac6] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#003da3]"
+        >
+          Quay lại danh sách đề thi
+        </button>
       </main>
     );
   }

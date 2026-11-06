@@ -219,3 +219,10 @@ export interface PublishResult {
   is_published: boolean;
   errors: string[];
 }
+
+export interface MediaAutoLinkResult {
+  linked_audios: number;
+  linked_images: number;
+  linked_passages: number;
+  total_groups: number;
+}

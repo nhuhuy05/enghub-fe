@@ -22,9 +22,6 @@ apiClient.interceptors.response.use(
     // Handling 401 Unauthenticated: logout user if token expired or invalid
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
     }
     return Promise.reject(error);
   },
