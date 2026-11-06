@@ -53,6 +53,7 @@ export const useAuth = () => {
       return { success: false, message };
     } finally {
       setIsLoading(false);
+      markSessionChecked();
     }
   };
 
@@ -103,6 +104,7 @@ export const useAuth = () => {
       return { success: false };
     } finally {
       setIsLoading(false);
+      markSessionChecked();
     }
   }, [clearStore, markSessionChecked, setAuth]);
 

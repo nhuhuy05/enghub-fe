@@ -12,11 +12,13 @@ interface GroupSidebarProps {
   filteredGroups: QuestionGroupSummary[];
   selectedGroupId: number | null;
   saving: boolean;
+  autoLinking?: boolean;
   reviewableCount: number;
   blockedReviewCount: number;
   onSelectPart: (partNumber: number) => void;
   onSelectGroup: (groupId: number) => void;
   onMarkAllReviewed: () => void;
+  onAutoLink?: () => void;
 }
 
 export const GroupSidebar = ({
@@ -25,11 +27,13 @@ export const GroupSidebar = ({
   filteredGroups,
   selectedGroupId,
   saving,
+  autoLinking,
   reviewableCount,
   blockedReviewCount,
   onSelectPart,
   onSelectGroup,
   onMarkAllReviewed,
+  onAutoLink,
 }: GroupSidebarProps) => (
   <aside className="min-w-0">
     <div className="rounded-2xl border border-[#d8dced] bg-white p-4 shadow-sm">
@@ -55,6 +59,17 @@ export const GroupSidebar = ({
         >
           Đã review tất cả
         </button>
+        {onAutoLink && (
+          <button
+            type="button"
+            onClick={onAutoLink}
+            disabled={saving || autoLinking}
+            className="rounded-full border border-[#004ac6] bg-[#eaf0ff] px-3 py-1 text-xs font-bold text-[#004ac6] transition hover:bg-[#dbe7ff] disabled:opacity-40"
+            title="Tự động liên kết Audio và Hình ảnh đã tải lên với các câu hỏi"
+          >
+            {autoLinking ? 'Đang liên kết...' : 'Liên kết Media'}
+          </button>
+        )}
       </div>
 
       {blockedReviewCount > 0 && (

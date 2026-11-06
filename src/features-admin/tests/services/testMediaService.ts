@@ -1,10 +1,15 @@
 import apiClient from '@/api/apiClient';
 import type { ApiResponse } from '@/types/apiTypes';
-import type { MediaAsset } from '../types/adminTestTypes';
+import type { MediaAsset, MediaAutoLinkResult } from '../types/adminTestTypes';
 
 export const testMediaService = {
   getTestMedia: async (testId: number): Promise<ApiResponse<MediaAsset[]>> => {
     const response = await apiClient.get<ApiResponse<MediaAsset[]>>(`/admin/tests/${testId}/media`);
+    return response.data;
+  },
+
+  autoLinkMedia: async (testId: number): Promise<ApiResponse<MediaAutoLinkResult>> => {
+    const response = await apiClient.post<ApiResponse<MediaAutoLinkResult>>(`/admin/tests/${testId}/media/auto-link`);
     return response.data;
   },
 
