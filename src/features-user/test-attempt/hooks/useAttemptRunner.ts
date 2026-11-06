@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getErrorCode,
@@ -65,9 +65,20 @@ const patchSelectedAnswer = (
   })),
 });
 
-const getSecondsUntil = (expiresAt: string | null, fallback: number | null) => {
-  if (!expiresAt) return fallback ?? 0;
-  return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 1000));
+const parseUtcDate = (dateStr: string): Date => {
+  if (dateStr.endsWith('Z') || /[+-]\d{2}(:\d{2})?$/.test(dateStr)) {
+    return new Date(dateStr);
+  }
+  return new Date(dateStr + 'Z');
+};
+
+const computeRemainingSeconds = (expiresAt: string | null, serverRemaining: number | null): number => {
+  // Ưu tiên remainingSeconds từ server vì server tính dựa trên startedAt và clock của chính nó (không phụ thuộc múi giờ client)
+  if (typeof serverRemaining === 'number' && Number.isFinite(serverRemaining) && serverRemaining >= 0) {
+    return serverRemaining;
+  }
+  if (!expiresAt) return 0;
+  return Math.max(0, Math.ceil((parseUtcDate(expiresAt).getTime() - Date.now()) / 1000));
 };
 
 export const useAttemptRunner = (attemptId: number, options?: { hydratePracticeFeedbacks?: boolean }) => {
@@ -81,6 +92,9 @@ export const useAttemptRunner = (attemptId: number, options?: { hydratePracticeF
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [remainingSeconds, setRemainingSeconds] = useState(0);
+
+  const deadlineMsRef = useRef<number | null>(null);
+  const timerInitializedRef = useRef(false);
 
   const routeToResult = useCallback(() => {
     navigate(`/attempts/${attemptId}/result`, { replace: true });
@@ -113,7 +127,24 @@ export const useAttemptRunner = (attemptId: number, options?: { hydratePracticeF
       } else {
         setFeedbacks({});
       }
-      setRemainingSeconds(getSecondsUntil(nextContent.attempt.expiresAt, nextContent.attempt.remainingSeconds));
+
+      if (nextContent.attempt.mode === 'MOCK') {
+        const initialSeconds = computeRemainingSeconds(
+          nextContent.attempt.expiresAt,
+          nextContent.attempt.remainingSeconds
+        );
+        // Nếu bài thi đã thực sự hết hạn từ trước khi người dùng vào lại
+        if (initialSeconds <= 0 && nextContent.attempt.startedAt) {
+          routeToResult();
+          return;
+        }
+        deadlineMsRef.current = Date.now() + initialSeconds * 1000;
+        setRemainingSeconds(initialSeconds);
+        timerInitializedRef.current = true;
+      } else {
+        setRemainingSeconds(0);
+        timerInitializedRef.current = false;
+      }
     } catch (err) {
       const code = getErrorCode(err);
       if (code === 1013) {
@@ -131,16 +162,18 @@ export const useAttemptRunner = (attemptId: number, options?: { hydratePracticeF
   }, [loadContent]);
 
   useEffect(() => {
-    if (!content?.attempt.expiresAt && !content?.attempt.remainingSeconds) return;
+    if (!content || content.attempt.mode !== 'MOCK' || deadlineMsRef.current === null) return;
 
     const tick = () => {
-      setRemainingSeconds(getSecondsUntil(content.attempt.expiresAt, content.attempt.remainingSeconds));
+      if (deadlineMsRef.current === null) return;
+      const diff = Math.max(0, Math.ceil((deadlineMsRef.current - Date.now()) / 1000));
+      setRemainingSeconds(diff);
     };
 
     tick();
     const timerId = window.setInterval(tick, 1000);
     return () => window.clearInterval(timerId);
-  }, [content?.attempt.expiresAt, content?.attempt.remainingSeconds]);
+  }, [content?.attempt.id, content?.attempt.mode]);
 
   const submitAttempt = useCallback(async () => {
     if (!Number.isFinite(attemptId)) return;
@@ -163,7 +196,21 @@ export const useAttemptRunner = (attemptId: number, options?: { hydratePracticeF
   }, [attemptId, routeToResult]);
 
   useEffect(() => {
-    if (!content || content.attempt.mode !== 'MOCK' || remainingSeconds > 0 || submitting) return;
+    // Chỉ auto-submit khi:
+    // 1. Content đã tải
+    // 2. Chế độ MOCK (luyện thi tính giờ)
+    // 3. Timer ĐÃ ĐƯỢC khởi tạo từ trước (timerInitializedRef.current === true)
+    // 4. Thời gian còn lại đã đếm lùi về đúng 0
+    // 5. Chưa đang trong tiến trình submit
+    if (
+      !content ||
+      content.attempt.mode !== 'MOCK' ||
+      !timerInitializedRef.current ||
+      remainingSeconds > 0 ||
+      submitting
+    ) {
+      return;
+    }
     void submitAttempt();
   }, [content, remainingSeconds, submitAttempt, submitting]);
 
